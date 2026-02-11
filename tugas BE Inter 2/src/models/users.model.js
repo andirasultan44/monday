@@ -1,33 +1,73 @@
 const db = require('../db/connection');
+const bcrypt = require('bcrypt');
 
 // ambil semua data
-const getAllUsers = (callback) => {
-  const sql = 'SELECT * FROM users';
-  db.query(sql, callback);
+const getAllUsers = async () => {
+  const [rows] = await db.query('SELECT * FROM users');
+  return rows;
 };
 
 // ambil 1 data berdasarkan id
-const getUserById = (id, callback) => {
-  const sql = 'SELECT * FROM users WHERE id = ?';
-  db.query(sql, [id], callback);
+const getUserById = async (id) => {
+  const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+  return rows;
 };
 
 // tambah data baru
-const createUser = (data, callback) => {
-  const sql = 'INSERT INTO users (nama_lengkap, no_hp, jenis_kelamin, foto_profil, email, password) VALUES (?, ?, ?, ?, ?, ?)';
-  db.query(sql, [data.nama_lengkap, data.no_hp, data.jenis_kelamin, data.foto_profil, data.email, data.password], callback);
+const createUser = async (data) => {
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+
+  const sql = `
+    INSERT INTO users 
+    (nama_lengkap, no_hp, jenis_kelamin, foto_profil, email, password) 
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  const [result] = await db.query(sql, [
+    data.nama_lengkap,
+    data.no_hp,
+    data.jenis_kelamin,
+    data.foto_profil,
+    data.email,
+    hashedPassword
+  ]);
+
+  return result;
 };
 
-// update data berdasarkan id
-const updateUser = (id, data, callback) => {
-  const sql = 'UPDATE users SET nama_lengkap=?, no_hp=?, jenis_kelamin=?, foto_profil=?, email=?, password=? WHERE id=?';
-  db.query(sql, [data.nama_lengkap, data.no_hp, data.jenis_kelamin, data.foto_profil, data.email, data.password, id], callback);
+// update data
+const updateUser = async (id, data) => {
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+
+  const sql = `
+    UPDATE users 
+    SET nama_lengkap=?, no_hp=?, jenis_kelamin=?, foto_profil=?, email=?, password=? 
+    WHERE id=?
+  `;
+
+  const [result] = await db.query(sql, [
+    data.nama_lengkap,
+    data.no_hp,
+    data.jenis_kelamin,
+    data.foto_profil,
+    data.email,
+    hashedPassword,
+    id
+  ]);
+
+  return result;
 };
 
-// hapus data berdasarkan id
-const deleteUser = (id, callback) => {
-  const sql = 'DELETE FROM users WHERE id = ?';
-  db.query(sql, [id], callback);
+// hapus data
+const deleteUser = async (id) => {
+  const [result] = await db.query('DELETE FROM users WHERE id = ?', [id]);
+  return result;
 };
 
-module.exports = { getAllUsers, getUserById, createUser, updateUser, deleteUser };
+module.exports = {
+  getAllUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser
+};

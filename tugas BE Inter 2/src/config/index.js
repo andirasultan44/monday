@@ -1,11 +1,14 @@
+require('dotenv').config();
+
 const config = {
-  port: process.env.PORT || 3001, // jika .env tidak ada, pakai default 3001
+  port: parseInt(process.env.PORT, 10) || 3001,
+
   db: {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASS || '', // kosongkan kalau MySQL-mu tidak pakai password
-    database: process.env.DB_NAME || 'edu_course', // ganti sesuai database kamu
-    port: process.env.DB_PORT || 3306
+    password: process.env.DB_PASS ?? '',
+    database: process.env.DB_NAME || 'edu_course',
+    port: parseInt(process.env.DB_PORT, 10) || 3306,
   },
 };
 
